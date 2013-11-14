@@ -1,0 +1,9 @@
+inicio
+var $a, $b, $c;
+
+enquanto ($a == 0)
+    leia($a, $b, $c);
+    escreva($a);
+fim_enquanto    
+
+fim.

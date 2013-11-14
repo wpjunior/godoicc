@@ -1,0 +1,13 @@
+inicio
+var $a,$b,$c;
+leia($a);
+escreva($a);
+
+leia($b);
+escreva($b);
+
+$c==$a+$b;
+
+leia($d);
+
+fim.

@@ -1,0 +1,21 @@
+inicio
+var $a, $a1;
+
+escreva(($a)
+// errors abaixo
+escreva($a))
+escreva($a$)
+escreva("a
+escreva("j"")
+escreva(10a);
+escreva("kaka", $123a);
+escreva($a, 10, $b);
+escreva($a, 10z, $b);
+escreva(10+10);
+
+//sem erros
+escreva($a);
+escreva($a1)
+escreva($a1, 10, $a, $a1, 10);
+escreva(10+10);
+fim.

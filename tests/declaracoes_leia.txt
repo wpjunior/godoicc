@@ -1,0 +1,11 @@
+inicio
+var $a,$b,$c;
+leia($a, $b, $c);
+escreva($a);
+
+leia($w, $b, $c, $d);
+escreva($b);
+
+leia($d, $b, $c);
+leia($d; $b; $c);
+fim.
