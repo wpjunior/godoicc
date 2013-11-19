@@ -1,3 +1,20 @@
+/*
+#  Copyright (C) 2013 Wanderson Pereira de Godoi
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,7 +23,6 @@
 #define READING_STRING 1
 #define READING_INT 2
 #define READING_VAR 3
-
 
 char *PALAVRAS_RESERVADAS[] = {
   "inicio",
@@ -104,7 +120,7 @@ void processa_variaveis(int num, char str[]) {
     if (p >= 0) {
 
       if ((p == 0) && (str[i] >= 48) && (str[i] <= 57)) {
-        printf("%d: %s -> Formato de variavel invalido\n", num, str);
+        printf("ERRO SINTATICO: %d: %s -> Formato de variavel invalido\n", num, str);
         return;
       }
 
@@ -124,25 +140,34 @@ void processa_variaveis(int num, char str[]) {
    }
 }
 
+
+int e_sinal_de_operacao(char str) {
+  if ((str == '+')||(str == '-')||(str == '*')||(str == '/'))
+    return 1;
+  else
+    return 0;
+}
 void processa_parametros(int num, char str[]) {
   /*
    * Processa os argumentos da função procurando strings e variaveis
    */
-  int i, reading_pos=-1, parentesis_level = 0, reading=0;
+  int i, reading_pos=-1, parentesis_level = 0, reading=0, previous_reading=0;
   char variavel[200];
 
   for (i=0; i<strlen(str); i++) {
     if (reading == READING_VAR) {
       if ((str[i] >= 48) && (str[i] <= 57) && (reading_pos == 0)) {
-        printf("%d: %s -> Formato de variavel invalido, variaveis nao podem comecar com numeros\n", num, str);
+        printf("ERRO SINTÁTICO: %d: %s -> Formato de variavel invalido, variaveis nao podem comecar com numeros\n", num, str);
       }
       else if ((str[i] == ',') || (str[i] == ')')) {
         variavel[reading_pos] = '\0';
         reading_pos=-1;
+        previous_reading=reading;
         reading = 0;
+        
 
         if (!inc_variavel_utilizada(variaveis, variavel)) {
-          printf("%d: %s -> variavel \"%s\" nao esta declarada\n", num, str, variavel);
+          printf("ERRO SINTATICO: %d: %s -> variavel \"%s\" nao esta declarada\n", num, str, variavel);
         }
       } else {
         variavel[reading_pos] = str[i];
@@ -150,13 +175,14 @@ void processa_parametros(int num, char str[]) {
       }
 
     } else if (reading == READING_INT) {
-      if ((str[i] == ',') || (str[i] == ')')) {
+      if ((str[i] == ',') || (str[i] == ')')||e_sinal_de_operacao(str[i])) {
         variavel[reading_pos] = '\0';
         reading_pos=-1;
+        previous_reading=reading;
         reading = 0;
 
       } else if ((str[i] < 48) || (str[i] > 57)) {
-        printf("%d: %s -> posicao %d, caractere %c nao esperado\n", num, str, i, str[i]);
+        printf("ERRO SINTATICO: %d: %s -> posicao %d, caractere %c nao esperado\n", num, str, i, str[i]);
 
       } else {
         reading_pos++;
@@ -169,13 +195,16 @@ void processa_parametros(int num, char str[]) {
     else if (str[i] == ')')
       parentesis_level--;
 
+    else if ((e_sinal_de_operacao(str[i])) && (previous_reading==READING_INT)) {
+    }
     else if (str[i] == '$') {
 
       if (reading == 0) {
+        previous_reading=reading;
         reading_pos=0;
         reading=READING_VAR;
       } else {
-        printf("%d: %s -> posicao %d, caractere $ nao esperado\n", num, str, i);
+        printf("ERRO SINTATICO: %d: %s -> posicao %d, caractere $ nao esperado\n", num, str, i);
       }
 
       
@@ -193,16 +222,17 @@ void processa_parametros(int num, char str[]) {
         reading=READING_STRING;
 
       } else if (reading == READING_STRING) {
+        previous_reading=reading;
         reading = 0;
         reading_pos = -1;
       } else {
-        printf("%d: %s -> posicao %d, caractere \" nao esperado\n", num, str, i);
+        printf("ERRO SINTATICO: %d: %s -> posicao %d, caractere \" nao esperado\n", num, str, i);
       }
     }
    }
 
   if (parentesis_level != 0)
-    printf("%d: %s -> parenteses nao balanceados\n", num, str);
+    printf("ERRO SINTATICO: %d: %s -> parenteses nao balanceados\n", num, str);
 }
 
 
@@ -232,7 +262,7 @@ void processa_linha(int num, char str[]) {
   // para a linha 1, sÃƒÂ³ ÃƒÂ© permitido a palavra inicio
   if (num == 1) {
     if (strcmp(str, "inicio")) {
-      printf("%d: %s -> Palavra invalida, use \"inicio\" para a primeira linha do arquivo\n", num, str);
+      printf("ERRO SINTATICO: %d: %s -> Palavra invalida, use \"inicio\" para a primeira linha do arquivo\n", num, str);
       return;
     } 
   }
@@ -263,6 +293,10 @@ void processa_linha(int num, char str[]) {
   else if (inicia_com("senao", str)) {
     processa_senao(num, str);
   }
+  else if (inicia_com("enquanto", str)) {
+  }
+  else if (inicia_com("fim_enquanto", str)) {
+  }
   else if (inicia_com("fim_se", str)) {
     processa_fim_se(num, str);
   }
@@ -273,7 +307,7 @@ void processa_linha(int num, char str[]) {
     // detecta linha vazia
   }
   else {
-    printf("%d: %s -> linha nao reconhecida\n", num, str);
+    printf("ERRO SINTATICO: %d: %s -> linha nao reconhecida\n", num, str);
   }
 }
 
